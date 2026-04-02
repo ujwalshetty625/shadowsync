@@ -3,6 +3,12 @@ const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3002;
 
+// BUG TYPES:
+// crash → returns 500
+// slow → delays response
+// wrong_data → corrupts values
+// missing_field → removes required fields
+
 // BUG_MODE=true triggers intentional failures for demo
 // BUG_TYPE: "crash" | "wrong_data" | "slow"
 const BUG_MODE = process.env.BUG_MODE === "true";
@@ -27,7 +33,16 @@ const injectBug = async (res, normalFn) => {
 app.get("/health", (req, res) => res.json({ status: "ok", version: "v2-shadow", bugMode: BUG_MODE }));
 
 app.get("/items", async (req, res) => {
-  await injectBug(res, () => res.json({ items, total: items.length }));
+  await injectBug(res, () => {
+    if (BUG_TYPE === "missing_field") {
+      return res.json({
+        items: items.map(i => ({ id: i.id, name: i.name })), // ❌ price & stock missing
+        total: items.length
+      });
+    }
+
+    res.json({ items, total: items.length });
+  });
 });
 
 app.get("/items/:id", async (req, res) => {
@@ -35,10 +50,19 @@ app.get("/items/:id", async (req, res) => {
   if (!item) return res.status(404).json({ error: "Item not found" });
 
   await injectBug(res, () => {
-    // BUG: wrong_data - corrupted price calculation
-    const data = BUG_TYPE === "wrong_data" ? { ...item, price: item.price * -1, stock: 0 } : item;
-    res.json(data);
-  });
+  if (BUG_TYPE === "missing_field") {
+    return res.json({
+      id: item.id,
+      name: item.name // ❌ missing price & stock
+    });
+  }
+
+  const data = BUG_TYPE === "wrong_data"
+    ? { ...item, price: item.price * -1, stock: 0 }
+    : item;
+
+  res.json(data);
+});
 });
 
 app.post("/items", async (req, res) => {
