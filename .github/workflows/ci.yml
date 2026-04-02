@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build all services
+        run: docker compose build proxy main-app shadow-app
+
+      - name: Start services
+        run: docker compose up -d proxy main-app shadow-app
+
+      - name: Wait for services
+        run: sleep 8
+
+      - name: Health check - Main App
+        run: curl -f http://localhost:3001/health
+
+      - name: Health check - Shadow App
+        run: curl -f http://localhost:3002/health
+
+      - name: Health check - Proxy
+        run: curl -f http://localhost:3000/health
+
+      - name: Test proxy mirroring
+        run: |
+          curl -f http://localhost:3000/items
+          curl -f http://localhost:3000/__shadow/logs
+          curl -f http://localhost:3000/__shadow/stats
+
+      - name: Teardown
+        run: docker compose down

@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  proxy:
+    build: ./proxy
+    ports:
+      - "3000:3000"
+    environment:
+      - MAIN_APP_URL=http://main-app:3001
+      - SHADOW_APP_URL=http://shadow-app:3002
+    depends_on:
+      - main-app
+      - shadow-app
+
+  main-app:
+    build: ./main-app
+    ports:
+      - "3001:3001"
+
+  shadow-app:
+    build: ./shadow-app
+    ports:
+      - "3002:3002"
+    environment:
+      - BUG_MODE=false   # flip to "true" for demo!
+
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "5173:80"
+    depends_on:
+      - proxy
