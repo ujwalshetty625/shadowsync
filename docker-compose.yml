@@ -21,8 +21,8 @@ services:
     ports:
       - "3002:3002"
     environment:
-      - BUG_MODE=false
-      - BUG_TYPE=crash
+      - BUG_MODE=true
+      - BUG_TYPE=missing_field
 
   # dashboard: (Dev 4 will uncomment when ready)
   #   build: ./dashboard
