@@ -16,7 +16,33 @@ app.get("/items/:id", (req, res) => {
   item ? res.json(item) : res.status(404).json({ error: "Item not found" });
 });
 app.post("/items", (req, res) => {
-  const item = { id: items.length + 1, ...req.body };
+  const { name, price, stock } = req.body;
+
+  // Validation: Check all required fields exist
+  if (!name || price === undefined || stock === undefined) {
+    return res.status(400).json({ 
+      error: "Missing required fields", 
+      required: ["name", "price", "stock"] 
+    });
+  }
+
+  // Validation: Check name is a string
+  if (typeof name !== "string" || name.trim() === "") {
+    return res.status(400).json({ error: "Name must be a non-empty string" });
+  }
+
+  // Validation: Check price is a valid positive number
+  if (typeof price !== "number" || price <= 0) {
+    return res.status(400).json({ error: "Price must be a positive number" });
+  }
+
+  // Validation: Check stock is a valid non-negative integer
+  if (!Number.isInteger(stock) || stock < 0) {
+    return res.status(400).json({ error: "Stock must be a non-negative integer" });
+  }
+
+  // All good! Create the item
+  const item = { id: items.length + 1, name: name.trim(), price, stock };
   items.push(item);
   res.status(201).json(item);
 });
