@@ -1,9 +1,9 @@
 const axios = require("axios");
 
-const PROXY = "http://proxy:3000";
+const PROXY = "http://localhost:3000";
 
 const run = async () => {
-  console.log("🚀 Starting load test against ShadowSync Proxy...\n");
+  console.log(" Starting load test against ShadowSync Proxy...\n");
 
   const endpoints = [
     { method: "GET", path: "/items" },
