@@ -24,9 +24,9 @@ services:
       - BUG_MODE=true
       - BUG_TYPE=missing_field
 
-  # dashboard: (Dev 4 will uncomment when ready)
-  #   build: ./dashboard
-  #   ports:
-  #     - "5173:80"
-  #   depends_on:
-  #     - proxy
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "5173:80"
+    depends_on:
+      - proxy
