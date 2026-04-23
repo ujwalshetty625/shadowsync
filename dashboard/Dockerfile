@@ -2,10 +2,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+# Copy EVERYTHING first
+COPY . .
+
+# Then install
 RUN npm install
 
-COPY . .
+# Then build
 RUN npm run build
 
 FROM nginx:alpine
