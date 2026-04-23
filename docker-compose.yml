@@ -17,7 +17,7 @@ services:
       - "3001:3001"
 
   shadow-app:
-    build: ./shadow-app
+    build: ./shadowsync/dashboard
     ports:
       - "3002:3002"
     environment:
