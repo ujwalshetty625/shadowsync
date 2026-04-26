@@ -20,26 +20,26 @@ pipeline {
 
     stage('Build Docker Images') {
       steps {
-        sh 'docker build -t $REPO_PREFIX-proxy:$IMAGE_TAG ./proxy'
-        sh 'docker build -t $REPO_PREFIX-main-app:$IMAGE_TAG ./main-app'
-        sh 'docker build -t $REPO_PREFIX-shadow-app:$IMAGE_TAG ./shadow-app'
-        sh 'docker build -t $REPO_PREFIX-dashboard:$IMAGE_TAG ./dashboard'
+        bat 'docker build -t %REPO_PREFIX%-proxy:%IMAGE_TAG% .\\proxy'
+        bat 'docker build -t %REPO_PREFIX%-main-app:%IMAGE_TAG% .\\main-app'
+        bat 'docker build -t %REPO_PREFIX%-shadow-app:%IMAGE_TAG% .\\shadow-app'
+        bat 'docker build -t %REPO_PREFIX%-dashboard:%IMAGE_TAG% .\\dashboard'
       }
     }
 
     stage('Show Docker Images') {
       steps {
-        sh 'docker images | grep shadowsync || true'
+        bat 'docker images'
       }
     }
 
     stage('Run Containers Smoke Test') {
       steps {
-        sh 'docker compose down || true'
-        sh 'docker compose up -d --build'
-        sh 'sleep 10'
-        sh 'curl -f http://localhost:3000/health'
-        sh 'curl -f http://localhost:5173'
+        bat 'docker compose down'
+        bat 'docker compose up -d --build'
+        powershell 'Start-Sleep -Seconds 10'
+        powershell 'Invoke-WebRequest -UseBasicParsing http://localhost:3000/health | Out-Null'
+        powershell 'Invoke-WebRequest -UseBasicParsing http://localhost:5173 | Out-Null'
       }
     }
 
@@ -49,11 +49,11 @@ pipeline {
       }
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-          sh 'docker push $REPO_PREFIX-proxy:$IMAGE_TAG'
-          sh 'docker push $REPO_PREFIX-main-app:$IMAGE_TAG'
-          sh 'docker push $REPO_PREFIX-shadow-app:$IMAGE_TAG'
-          sh 'docker push $REPO_PREFIX-dashboard:$IMAGE_TAG'
+          bat '@echo %DOCKER_PASS%| docker login -u %DOCKER_USER% --password-stdin'
+          bat 'docker push %REPO_PREFIX%-proxy:%IMAGE_TAG%'
+          bat 'docker push %REPO_PREFIX%-main-app:%IMAGE_TAG%'
+          bat 'docker push %REPO_PREFIX%-shadow-app:%IMAGE_TAG%'
+          bat 'docker push %REPO_PREFIX%-dashboard:%IMAGE_TAG%'
         }
       }
     }
@@ -63,17 +63,17 @@ pipeline {
         expression { return env.K8S_DEPLOY == 'true' }
       }
       steps {
-        sh 'kubectl apply -f k8s/Deployment.yaml'
-        sh 'kubectl apply -f k8s/Service.yaml'
-        sh 'kubectl get pods'
-        sh 'kubectl get services'
+        bat 'kubectl apply -f k8s\\Deployment.yaml'
+        bat 'kubectl apply -f k8s\\Service.yaml'
+        bat 'kubectl get pods'
+        bat 'kubectl get services'
       }
     }
   }
 
   post {
     always {
-      sh 'docker compose down || true'
+      bat 'docker compose down'
     }
   }
 }
