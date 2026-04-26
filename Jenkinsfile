@@ -35,7 +35,7 @@ pipeline {
 
     stage('Run Containers Smoke Test') {
       steps {
-        bat 'docker compose down'
+        bat 'docker compose down --remove-orphans'
         bat 'docker compose up -d --build'
         powershell 'Start-Sleep -Seconds 10'
         powershell 'Invoke-WebRequest -UseBasicParsing http://localhost:3000/health | Out-Null'
@@ -73,7 +73,7 @@ pipeline {
 
   post {
     always {
-      bat 'docker compose down'
+      bat 'docker compose down --remove-orphans'
     }
   }
 }
