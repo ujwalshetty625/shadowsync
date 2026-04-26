@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   proxy:
     build: ./proxy
@@ -13,13 +12,9 @@ services:
 
   main-app:
     build: ./main-app
-    ports:
-      - "3001:3001"
 
   shadow-app:
     build: ./shadow-app
-    ports:
-      - "3002:3002"
     environment:
       - BUG_MODE=true
       - BUG_TYPE=missing_field
