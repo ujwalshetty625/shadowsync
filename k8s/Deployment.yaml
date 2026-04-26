@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: main-app
+  template:
+    metadata:
+      labels:
+        app: main-app
+    spec:
+      containers:
+        - name: main-app
+          image: vishalv2005/shadowsync-main-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shadow-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shadow-app
+  template:
+    metadata:
+      labels:
+        app: shadow-app
+    spec:
+      containers:
+        - name: shadow-app
+          image: vishalv2005/shadowsync-shadow-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3002
+          env:
+            - name: BUG_MODE
+              value: "true"
+            - name: BUG_TYPE
+              value: "missing_field"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxy
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      containers:
+        - name: proxy
+          image: vishalv2005/shadowsync-proxy:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MAIN_APP_URL
+              value: "http://main-app-service:3001"
+            - name: SHADOW_APP_URL
+              value: "http://shadow-app-service:3002"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: vishalv2005/shadowsync-dashboard:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
