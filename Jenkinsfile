@@ -7,7 +7,7 @@ pipeline {
 
   environment {
     REGISTRY = "docker.io"
-    REPO_PREFIX = "your-dockerhub-username/shadowsync"
+    REPO_PREFIX = "vishalv2005/shadowsync"
     IMAGE_TAG = "${env.BUILD_NUMBER}"
   }
 
